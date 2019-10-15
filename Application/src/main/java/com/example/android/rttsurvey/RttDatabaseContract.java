@@ -12,7 +12,6 @@ public class RttDatabaseContract {
     private RttDatabaseContract() {}
 
     public static class Table_Data implements BaseColumns {
-        public static final String TABLE_NAME = "Position";
         public static final String COLUMN_BSSID =  "bssid";
         public static final String COLUMN_RANGE =  "range";
         public static final String COLUMN_RANGESD = "rangeSD";
@@ -21,15 +20,18 @@ public class RttDatabaseContract {
         public static final String COLUMN_NUMSUCMEAS = "numSucMeas";
         public static final String COLUMN_TIMESTAMP = "timestamp";
         public static final String COLUMN_PERIOD = "period";
+        public static final String COLUMN_GLBLTIMESTAMP = "glbltimestamp";
 
         public static final String COLUMN = columnConstruct();
 
-        public static final String CREATE_TABLE_PREFIX = "CREATE TABLE " + TABLE_NAME;
+        public static final String CREATE_TABLE_PREFIX = "CREATE TABLE ";
         public static final String CREATE_TABLE_SUFFIX =  "(" +
                 _ID + " INTEGER PRIMARY KEY," +
-                COLUMN + COLUMN_PERIOD + " INTEGER)";
+                COLUMN +
+                COLUMN_PERIOD + INT_TYPE + COMMA_SEP +
+                COLUMN_GLBLTIMESTAMP + INT_TYPE + ")";
 
-        public static final String DELETE_TABLE = "DROP TABLE IF EXISTS " + TABLE_NAME;
+        public static final String DELETE_TABLE = "DROP TABLE IF EXISTS ";
 
         private static String columnConstruct() {
             String COL = "";

@@ -42,11 +42,14 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.example.android.rttsurvey.MyAdapter.ScanResultClickListener;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 
+import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.lang.String;
+import java.util.TimeZone;
+
 
 /**
  * Displays list of Access Points enabled with WifiRTT (to check distance). Requests location
@@ -92,7 +95,6 @@ public class MainActivity extends AppCompatActivity implements ScanResultClickLi
 
         mWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
         mWifiScanReceiver = new WifiScanReceiver();
-
     }
 
     @Override
@@ -135,6 +137,7 @@ public class MainActivity extends AppCompatActivity implements ScanResultClickLi
         if (mLocationPermissionApproved && mExternalPermissionApproved) {
             logToUi(getString(R.string.retrieving_access_points));
             mWifiManager.startScan();
+            return;
         } else {
             // On 23+ (M+) devices, fine location permission not granted. Request permission.
             Intent startIntent = new Intent(this, LocationPermissionRequestActivity.class);

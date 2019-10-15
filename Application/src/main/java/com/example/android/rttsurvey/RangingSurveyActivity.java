@@ -22,13 +22,19 @@ import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
 public class RangingSurveyActivity extends AppCompatActivity {
     private static final String TAG = "RSActivity";
+    private static final String TAG2 = "DBSync";
 
-    private static final int MILLISECONDS_DELAY_BEFORE_NEW_RANGING_REQUEST_DEFAULT = 1000; // Delay period
-    private static final int SAMPLE_SIZE_DEFAULT = 5; // Request window size
+    private static final int MILLISECONDS_DELAY_BEFORE_NEW_RANGING_REQUEST_DEFAULT = 500; // Delay period
+    private static final int SAMPLE_SIZE_DEFAULT = 3; // Request window size
 
     public static final String SURVEY_EXTRA =
             "com.example.android.rttsurvey.extra.SURVEY";
@@ -49,10 +55,11 @@ public class RangingSurveyActivity extends AppCompatActivity {
     final Handler mRangeRequestDelayHandler = new Handler();
 
     SQLiteDatabase db;
-    String TableName;
+    String tblName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.d(TAG, "onCreate()");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_survey_ranging_results);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -61,8 +68,9 @@ public class RangingSurveyActivity extends AppCompatActivity {
         DatabaseContext dbConext = new DatabaseContext(this);
         RttDataBaseHelper dbHelper = new RttDataBaseHelper(dbConext);
         db = dbHelper.getWritableDatabase();
-        int table_index = RttDataBaseHelper.getTableIndex(db);
-        TableName = RttDatabaseContract.Table_Data.TABLE_NAME + table_index;
+        int tblIndex = RttDataBaseHelper.getTableIndex(db);
+        tblName = RttDataBaseHelper.getTableName();
+        Log.d(TAG2, tblName + " Start");
 
 
         mRecyclerView = findViewById(R.id.survey_recycler_view);
@@ -85,16 +93,18 @@ public class RangingSurveyActivity extends AppCompatActivity {
 
     @Override
     public void onDestroy(){
+        Log.d(TAG, "onDestroy()");
         super.onDestroy();
         db.close();
     }
 
     @Override
     public void onBackPressed () {
+        Log.d(TAG, "onBackPressed()");
         mRangeRequestDelayHandler.removeCallbacksAndMessages(null);
         finish();
-        db.close();
         super.onBackPressed();
+        return;
     }
 
     private void writeAPinfo (List<ScanResult> list) {
@@ -125,6 +135,7 @@ public class RangingSurveyActivity extends AppCompatActivity {
             finish();
         }
         if (mNumberOfRangeRequests >= SAMPLE_SIZE_DEFAULT) {
+            Log.d(TAG2, tblName + " Done");
             onBackPressed();
             return;
         }
@@ -147,6 +158,7 @@ public class RangingSurveyActivity extends AppCompatActivity {
             values.put(RttDatabaseContract.Table_Data.COLUMN_TIMESTAMP + i, rangingResult.getRangingTimestampMillis());
             values.put(RttDatabaseContract.Table_Data.COLUMN_RSSI + i, rangingResult.getRssi());
         }
+        values.put(RttDatabaseContract.Table_Data.COLUMN_PERIOD, mMillisecondsDelayBeforeNewRangingRequest);
         return values;
     }
 
@@ -182,7 +194,9 @@ public class RangingSurveyActivity extends AppCompatActivity {
                     // Blank
                 }
             }
-            db.insert(TableName, null, values);
+            Log.d(TAG2, tblName + " " + System.currentTimeMillis());
+            values.put(RttDatabaseContract.Table_Data.COLUMN_GLBLTIMESTAMP, System.currentTimeMillis());
+            db.insert(tblName, null, values);
             mSurveyAdapter.update(list); // Show updated data in UI
             queueNextRangingRequest();
         }

@@ -1,18 +1,15 @@
 package com.example.android.rttsurvey;
 
 import android.content.Context;
-import android.content.ContextWrapper;
 import android.database.Cursor;
-import android.database.DatabaseErrorHandler;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.os.Environment;
-import android.util.Log;
 
-import java.io.File;
+import org.apache.commons.lang3.RandomStringUtils;
 
 
 public class RttDataBaseHelper extends SQLiteOpenHelper {
+    static String tblName;
 
     public RttDataBaseHelper(Context context) {
         super(context, RttDatabaseContract.DATABASE_NAME , null, RttDatabaseContract.DATABASE_VERSION);
@@ -33,8 +30,8 @@ public class RttDataBaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onOpen (SQLiteDatabase db) {
-        int table_index = getTableIndex(db) + 1;
-        db.execSQL(RttDatabaseContract.Table_Data.CREATE_TABLE_PREFIX + table_index + RttDatabaseContract.Table_Data.CREATE_TABLE_SUFFIX);
+        updateTableName();
+        db.execSQL(RttDatabaseContract.Table_Data.CREATE_TABLE_PREFIX + tblName + RttDatabaseContract.Table_Data.CREATE_TABLE_SUFFIX);
     }
 
     public void onDowngrade (SQLiteDatabase db, int oldVersion, int newVersion) {
@@ -54,5 +51,13 @@ public class RttDataBaseHelper extends SQLiteOpenHelper {
         } else {
             return 0;
         }
+    }
+
+    private void updateTableName () {
+        tblName =  RandomStringUtils.random(8, true, true);
+    }
+
+    public static String getTableName () {
+        return tblName;
     }
 }
